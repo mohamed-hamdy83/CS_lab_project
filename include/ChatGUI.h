@@ -1,0 +1,47 @@
+#ifndef CHAT_GUI_H
+#define CHAT_GUI_H
+
+#include <QWidget>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QTextEdit>
+#include <QStackedWidget>
+#include <QString>
+#include <QMessageBox>
+
+class ChatGUI : public QWidget {
+    Q_OBJECT 
+
+public:
+    explicit ChatGUI(QWidget *parent = nullptr);
+
+    
+    void showLoginScreen();
+    void showChatScreen();
+    void showErrorPopup(const QString& errorMessage);
+    void appendChatMessage(const QString& sender, const QString& message);
+
+signals:
+    
+    void loginRequested(const QString& username);
+    void sendMessageRequested(const QString& message);
+
+private:
+    QStackedWidget* stackedWidget;
+
+    // screen 1: login
+    QWidget* loginWidget;
+    QLineEdit* usernameInput;
+    QPushButton* loginButton;
+
+    // screen 2: chat
+    QWidget* chatWidget;
+    QTextEdit* chatHistory;
+    QLineEdit* messageInput;
+    QPushButton* sendButton;
+
+    // helper function to build the ui
+    void setupUI();
+};
+
+#endif
