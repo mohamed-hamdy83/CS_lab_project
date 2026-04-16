@@ -10,23 +10,24 @@
 #include <QMessageBox>
 
 class ChatGUI : public QWidget {
-    Q_OBJECT 
+    Q_OBJECT // this macro is required to use qt signals and slots
 
 public:
     explicit ChatGUI(QWidget *parent = nullptr);
 
-    
+    // methods for the controller to update the gui
     void showLoginScreen();
     void showChatScreen();
     void showErrorPopup(const QString& errorMessage);
     void appendChatMessage(const QString& sender, const QString& message);
 
 signals:
-    
+    // the gui does NOT process the login or send the message itself.
     void loginRequested(const QString& username);
     void sendMessageRequested(const QString& message);
 
 private:
+    // the container that holds the different screens
     QStackedWidget* stackedWidget;
 
     // screen 1: login
