@@ -20,7 +20,6 @@ void ChatGUI::setupUI() {
     loginLayout->addWidget(usernameInput);
     loginLayout->addWidget(loginButton);
 
-    // when login is clicked, emit the signal with the text inside the input
     connect(loginButton, &QPushButton::clicked, this, [this]() {
         emit loginRequested(usernameInput->text());
     });
@@ -29,7 +28,7 @@ void ChatGUI::setupUI() {
     chatWidget = new QWidget();
     QVBoxLayout* chatLayout = new QVBoxLayout(chatWidget);
     chatHistory = new QTextEdit();
-    chatHistory->setReadOnly(true); // users shouldn't type in the history box
+    chatHistory->setReadOnly(true); 
     
     QHBoxLayout* inputLayout = new QHBoxLayout();
     messageInput = new QLineEdit();
@@ -37,19 +36,41 @@ void ChatGUI::setupUI() {
     sendButton = new QPushButton("Send");
     inputLayout->addWidget(messageInput);
     inputLayout->addWidget(sendButton);
-    
+
+    settingsButton = new QPushButton("Settings"); 
+
+    chatLayout->addWidget(settingsButton); 
     chatLayout->addWidget(chatHistory);
     chatLayout->addLayout(inputLayout);
 
-    // when send is clicked, emit the signal and clear the input box
     connect(sendButton, &QPushButton::clicked, this, [this]() {
         emit sendMessageRequested(messageInput->text());
         messageInput->clear();
     });
 
-    // add screens to the stack
+    // --- build screen 3: settings ---
+    settingsWidget = new QWidget();
+    QVBoxLayout* settingsLayout = new QVBoxLayout(settingsWidget);
+    settingsLayout->addWidget(new QLabel("Settings Menu"));
+    settingsLayout->addWidget(new QLabel("Theme: Dark Mode (Coming Soon)"));
+    settingsLayout->addWidget(new QLabel("Notifications: On"));
+    
+    backButton = new QPushButton("Back to Chat");
+    settingsLayout->addWidget(backButton);
+    settingsLayout->addStretch(); // pushes everything to the top
+
+    // --- connect navigation buttons ---
+    connect(settingsButton, &QPushButton::clicked, this, [this]() {
+        stackedWidget->setCurrentWidget(settingsWidget);
+    });
+    connect(backButton, &QPushButton::clicked, this, [this]() {
+        stackedWidget->setCurrentWidget(chatWidget);
+    });
+
+    // add all screens to the stack
     stackedWidget->addWidget(loginWidget);
     stackedWidget->addWidget(chatWidget);
+    stackedWidget->addWidget(settingsWidget);
 
     // main layout for the whole window
     QVBoxLayout* mainLayout = new QVBoxLayout(this);

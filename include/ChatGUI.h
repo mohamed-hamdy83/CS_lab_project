@@ -40,6 +40,11 @@ private:
     QTextEdit* chatHistory;
     QLineEdit* messageInput;
     QPushButton* sendButton;
+    QPushButton* settingsButton;
+
+    // screen 3: settings
+    QWidget* settingsWidget;
+    QPushButton* backButton;     
 
     // helper function to build the ui
     void setupUI();

@@ -23,8 +23,10 @@ add_executable(ChatApp
     src/main.cpp 
     src/ChatGUI.cpp 
     src/ChatController.cpp
+    src/RealNetworkClient.cpp   
     include/ChatGUI.h
     include/ChatController.h
+    include/RealNetworkClient.h 
 )
 target_link_libraries(ChatApp PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network)
 
