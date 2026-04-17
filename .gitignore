@@ -1,0 +1,9 @@
+# ignore the cmake build folder and all its heavy executables/dlls
+build/
+
+# ignore vs code workspace settings (optional, but good practice)
+.vscode/
+
+# ignore typical os background files
+.DS_Store
+Thumbs.db

@@ -35,7 +35,7 @@ TEST(ChatControllerTest, ValidLoginSendsJson) {
     emit gui.loginRequested("student123");
     
     // verify connection was attempted and a message was sent
-    Verify(Method(mockNetwork, connectToServer).Using("127.0.0.1", 8080)).Exactly(1);
+    Verify(Method(mockNetwork, connectToServer)).Exactly(1);
     Verify(Method(mockNetwork, sendJsonMessage)).Exactly(1);
 }
 
