@@ -1,4 +1,6 @@
 #include "RealNetworkClient.h"
+#include <qcoronetwork.h>  
+#include <qcoroiodevice.h> 
 #include <iostream>
 
 RealNetworkClient::RealNetworkClient(QObject* parent) : QObject(parent) {
@@ -10,12 +12,14 @@ RealNetworkClient::~RealNetworkClient() {
 }
 
 bool RealNetworkClient::connectToServer(const std::string& ipAddress, int port) {
-    // connect to the ip and port
     socket->connectToHost(QString::fromStdString(ipAddress), port);
     
-    // wait up to 3 seconds for the server to respond
     if (socket->waitForConnected(3000)) {
         std::cout << "network: successfully connected to server!\n";
+        
+        // start the asynchronous qcoro read loop in the background!
+        receiveMessages(); 
+        
         return true;
     }
     
@@ -32,11 +36,23 @@ void RealNetworkClient::disconnect() {
 
 void RealNetworkClient::sendJsonMessage(const std::string& jsonPayload) {
     if (socket->state() == QAbstractSocket::ConnectedState) {
-        // we add a newline at the end so the server knows when the message finishes
         QByteArray message = QString::fromStdString(jsonPayload + "\n").toUtf8();
         socket->write(message);
-        
-        // ensure it actually sends over the network
         socket->waitForBytesWritten(1000); 
+    }
+}
+
+QCoro::Task<void> RealNetworkClient::receiveMessages() {
+    // this loops continuously without freezing the gui
+    while (socket->isOpen() && socket->state() == QAbstractSocket::ConnectedState) {
+        
+        // co_await yields control back to the app until data arrives
+        QByteArray data = co_await qCoro(socket).readLine();
+        
+        if (data.isEmpty()) {
+            break; 
+        }
+        
+        std::cout << "[Client Received] " << data.toStdString() << "\n";
     }
 }

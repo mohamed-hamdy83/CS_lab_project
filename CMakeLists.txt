@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 project(CS_lab_project)
 
 # use c++ 17
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # let cmake handle qt's special macros automatically
@@ -12,6 +12,23 @@ set(CMAKE_AUTORCC ON)
 
 # find the qt libraries
 find_package(Qt6 COMPONENTS Core Gui Widgets Network REQUIRED)
+
+# --- NEW QCORO SECTION ---
+# tell cmake to automatically download qcoro from github
+include(FetchContent)
+FetchContent_Declare(
+    QCoro
+    GIT_REPOSITORY https://github.com/danvratil/qcoro.git
+    GIT_TAG v0.6.0   # <-- The golden fix! v0.6.0 has no QML bloat.
+)
+set(QCORO_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(QCORO_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+
+# turn off the remaining modules we don't need
+set(QCORO_WITH_QTWEBSOCKETS OFF CACHE BOOL "" FORCE)
+set(QCORO_WITH_QTDBUS OFF CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(QCoro)
 
 # tell cmake where to look for our header files
 include_directories(include)
@@ -23,12 +40,13 @@ add_executable(ChatApp
     src/main.cpp 
     src/ChatGUI.cpp 
     src/ChatController.cpp
-    src/RealNetworkClient.cpp   
+    src/RealNetworkClient.cpp
     include/ChatGUI.h
     include/ChatController.h
-    include/RealNetworkClient.h 
+    include/RealNetworkClient.h
 )
-target_link_libraries(ChatApp PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network)
+# --- ADD QCORO TO THIS TARGET LINK LINE ---
+target_link_libraries(ChatApp PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network QCoro6::Core QCoro6::Network)
 
 # ---------------------------------------------------------
 # build 2: the unit tests
