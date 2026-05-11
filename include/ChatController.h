@@ -6,20 +6,21 @@
 #include "ChatGUI.h"
 #include "INetworkClient.h"
 
-class ChatController : public QObject {
-    Q_OBJECT // needed for qt signals and slots
+class ChatController : public QObject
+{
+    Q_OBJECT
 public:
-    ChatController(ChatGUI* gui, INetworkClient* network, QObject* parent = nullptr);
+    ChatController(ChatGUI *gui, INetworkClient *network, QObject *parent = nullptr);
 
 private slots:
-    // these slots will catch the signals emitted by the gui
-    void handleLogin(const QString& username);
-    void handleSendMessage(const QString& message, const QString& recipient);
-    void handleIncomingMessage(const std::string& jsonPayload);
+
+    void handleLogin(const QString &username);
+    void handleSendMessage(const QString &message, const QString &recipient);
+    void handleIncomingMessage(const std::string &jsonPayload);
 
 private:
-    ChatGUI* view;
-    INetworkClient* network;
+    ChatGUI *view;
+    INetworkClient *network;
     QString currentUsername;
 };
 

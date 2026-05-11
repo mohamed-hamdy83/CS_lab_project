@@ -7,21 +7,21 @@
 #include <QJsonDocument>
 #include "INetworkServer.h"
 
-class ServerController {
+class ServerController
+{
 public:
-    ServerController(INetworkServer* network);
-    
+    ServerController(INetworkServer *network);
+
     void clientConnected(int clientId);
     void clientDisconnected(int clientId);
-    void processMessage(int clientId, const std::string& jsonMessage);
+    void processMessage(int clientId, const std::string &jsonMessage);
     std::string getUsername(int clientId) const;
 
 private:
-    INetworkServer* network;
+    INetworkServer *network;
     std::map<int, std::string> activeUsers;
-    
-    // --- THIS IS THE LINE THE COMPILER WAS LOOKING FOR ---
-    void broadcastUserList(); 
+
+    void broadcastUserList();
 };
 
 #endif

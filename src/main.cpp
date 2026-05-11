@@ -1,14 +1,15 @@
 #include <QApplication>
 #include "ChatGUI.h"
 #include "ChatController.h"
-#include "RealNetworkClient.h" 
+#include "RealNetworkClient.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     QApplication app(argc, argv);
 
     ChatGUI gui;
-    RealNetworkClient realNet; 
-    
+    RealNetworkClient realNet;
+
     // pass the real network to the controller
     ChatController controller(&gui, &realNet);
 

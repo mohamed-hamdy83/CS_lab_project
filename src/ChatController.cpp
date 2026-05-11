@@ -5,124 +5,142 @@
 #include <QJsonArray>
 #include <QStringList>
 
-ChatController::ChatController(ChatGUI* gui, INetworkClient* net, QObject* parent) 
-    : QObject(parent), view(gui), network(net) {
-    
+ChatController::ChatController(ChatGUI *gui, INetworkClient *net, QObject *parent)
+    : QObject(parent), view(gui), network(net)
+{
+
     connect(view, &ChatGUI::loginRequested, this, &ChatController::handleLogin);
     connect(view, &ChatGUI::sendMessageRequested, this, &ChatController::handleSendMessage);
-    
-    auto* realNet = dynamic_cast<RealNetworkClient*>(network);
-    if (realNet) {
-        connect(realNet, &RealNetworkClient::jsonMessageReceived, 
+
+    auto *realNet = dynamic_cast<RealNetworkClient *>(network);
+    if (realNet)
+    {
+        connect(realNet, &RealNetworkClient::jsonMessageReceived,
                 this, &ChatController::handleIncomingMessage);
     }
 
     view->showLoginScreen();
 }
 
-void ChatController::handleLogin(const QString& username) {
+void ChatController::handleLogin(const QString &username)
+{
     // input validation: don't allow empty usernames
-    if (username.trimmed().isEmpty()) {
+    if (username.trimmed().isEmpty())
+    {
         view->showErrorPopup("username cannot be empty.");
         return;
     }
-    
+
     currentUsername = username;
     view->setWindowTitleByUsername(username);
-    
-    // try to connect to the server (we will mock this to always return true later)
+
     bool connected = network->connectToServer("127.0.0.1", 8080);
-    
-    if (connected) {
-        // build the json login request
+
+    if (connected)
+    {
         QJsonObject payload;
         payload["username"] = username;
-        
+
         QJsonObject message;
         message["type"] = "login";
         message["payload"] = payload;
-        
+
         QJsonDocument doc(message);
-        // convert json to string and send it
         network->sendJsonMessage(doc.toJson(QJsonDocument::Compact).toStdString());
-        
+
         // switch the gui to the chat room
         view->showChatScreen();
-    } else {
+    }
+    else
+    {
         view->showErrorPopup("failed to connect to server.");
     }
 }
 
-void ChatController::handleSendMessage(const QString& msgText, const QString& recipient) {
-    if (msgText.trimmed().isEmpty()) return; 
-    
+void ChatController::handleSendMessage(const QString &msgText, const QString &recipient)
+{
+    if (msgText.trimmed().isEmpty())
+        return;
+
     QJsonObject payload;
     payload["sender"] = currentUsername;
     payload["content"] = msgText;
-    
+
     QJsonObject message;
     QString target = recipient.trimmed();
-    
+
     // Logic 1: No recipient = Broadcast
-    if (target.isEmpty()) {
+    if (target.isEmpty())
+    {
         message["type"] = "broadcast";
-    } 
+    }
     // Logic 2: Has commas = Group Chat
-    else if (target.contains(",")) {
+    else if (target.contains(","))
+    {
         message["type"] = "group_chat";
-        
+
         QStringList userList = target.split(",");
         QJsonArray recipientsArray;
-        for (const QString& user : userList) {
+        for (const QString &user : userList)
+        {
             QString trimmedUser = user.trimmed();
-            if (!trimmedUser.isEmpty()) {
+            if (!trimmedUser.isEmpty())
+            {
                 recipientsArray.append(trimmedUser);
             }
         }
         payload["recipients"] = recipientsArray;
-    } 
+    }
     // Logic 3: Single name = Private Chat
-    else {
+    else
+    {
         message["type"] = "private_chat";
         payload["recipient"] = target;
     }
-    
+
     message["payload"] = payload;
-    
+
     QJsonDocument doc(message);
     network->sendJsonMessage(doc.toJson(QJsonDocument::Compact).toStdString());
 }
 
-void ChatController::handleIncomingMessage(const std::string& jsonPayload) {
+void ChatController::handleIncomingMessage(const std::string &jsonPayload)
+{
     QJsonDocument doc = QJsonDocument::fromJson(QString::fromStdString(jsonPayload).toUtf8());
 
-    if (doc.isNull()) return;
+    if (doc.isNull())
+        return;
 
     QJsonObject obj = doc.object();
     QString type = obj["type"].toString();
     QJsonObject payload = obj["payload"].toObject();
-    if (type == "user_list") {
+    if (type == "user_list")
+    {
         QJsonArray usersArray = payload["users"].toArray();
         QStringList activeUsers;
-        for (const QJsonValue& val : usersArray) {
+        for (const QJsonValue &val : usersArray)
+        {
             activeUsers << val.toString();
         }
         view->updateOnlineUsers(activeUsers, currentUsername);
-    } 
+    }
 
     // Accept all three types of messages
-    if (type == "broadcast" || type == "private_chat" || type == "group_chat") {
+    if (type == "broadcast" || type == "private_chat" || type == "group_chat")
+    {
         QString sender = payload["sender"].toString();
         QString content = payload["content"].toString();
-        
+
         // Add visual tags to the GUI so the user knows the privacy level
-        if (type == "private_chat") {
+        if (type == "private_chat")
+        {
             sender = "[Private] " + sender;
-        } else if (type == "group_chat") {
+        }
+        else if (type == "group_chat")
+        {
             sender = "[Group] " + sender;
         }
-        
+
         view->appendChatMessage(sender, content);
     }
-    
 }

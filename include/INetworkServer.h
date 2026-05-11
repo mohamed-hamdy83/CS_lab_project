@@ -3,11 +3,12 @@
 
 #include <string>
 
-class INetworkServer {
+class INetworkServer
+{
 public:
     virtual ~INetworkServer() = default;
-    virtual void broadcast(const std::string& message) = 0;
-    virtual void sendToClient(int clientId, const std::string& message) = 0;
+    virtual void broadcast(const std::string &message) = 0;
+    virtual void sendToClient(int clientId, const std::string &message) = 0;
 };
 
 #endif

@@ -7,22 +7,23 @@
 #include <QObject>
 #include <qcorotask.h>
 
-class RealNetworkClient : public QObject, public INetworkClient {
+class RealNetworkClient : public QObject, public INetworkClient
+{
     Q_OBJECT
 public:
-    explicit RealNetworkClient(QObject* parent = nullptr);
+    explicit RealNetworkClient(QObject *parent = nullptr);
     ~RealNetworkClient() override;
 
-    bool connectToServer(const std::string& ipAddress, int port) override;
+    bool connectToServer(const std::string &ipAddress, int port) override;
     void disconnect() override;
-    void sendJsonMessage(const std::string& jsonPayload) override;
+    void sendJsonMessage(const std::string &jsonPayload) override;
 
 signals:
-    void jsonMessageReceived(const std::string& jsonPayload);
+    void jsonMessageReceived(const std::string &jsonPayload);
 
 private:
-    QTcpSocket* socket;
-    QCoro::Task<void> receiveMessages(); 
+    QTcpSocket *socket;
+    QCoro::Task<void> receiveMessages();
 };
 
 #endif
