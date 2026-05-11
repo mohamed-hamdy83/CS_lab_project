@@ -62,8 +62,8 @@ TEST(ChatControllerTest, EmptyMessageNotSent) {
     ChatGUI gui;
     ChatController controller(&gui, &mockNetwork.get());
     
-    emit gui.sendMessageRequested("   "); 
-    
+    emit gui.sendMessageRequested("   ", "");
+
     Verify(Method(mockNetwork, sendJsonMessage)).Exactly(0);
 }
 
@@ -75,15 +75,18 @@ TEST(ChatControllerTest, ValidMessageSendsJson) {
     ChatGUI gui;
     ChatController controller(&gui, &mockNetwork.get());
     
-    emit gui.sendMessageRequested("hello world");
+    emit gui.sendMessageRequested("hello world", "");
     
     // verify that the network interface was told to send exactly 1 message
     Verify(Method(mockNetwork, sendJsonMessage)).Exactly(1);
 }
 
-// qt needs a qapplication to create gui elements, even in tests
+// --- ADD THIS TO THE VERY BOTTOM OF THE FILE ---
 int main(int argc, char **argv) {
+    // Start the Qt Application engine so the GUI doesn't throw warnings
     QApplication app(argc, argv);
+    
+    // Run the tests
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

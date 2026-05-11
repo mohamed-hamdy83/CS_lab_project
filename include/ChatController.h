@@ -14,7 +14,8 @@ public:
 private slots:
     // these slots will catch the signals emitted by the gui
     void handleLogin(const QString& username);
-    void handleSendMessage(const QString& message);
+    void handleSendMessage(const QString& message, const QString& recipient);
+    void handleIncomingMessage(const std::string& jsonPayload);
 
 private:
     ChatGUI* view;

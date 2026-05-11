@@ -8,6 +8,7 @@
 #include <QStackedWidget>
 #include <QString>
 #include <QMessageBox>
+#include <QListWidget>
 
 class ChatGUI : public QWidget {
     Q_OBJECT // this macro is required to use qt signals and slots
@@ -20,13 +21,18 @@ public:
     void showChatScreen();
     void showErrorPopup(const QString& errorMessage);
     void appendChatMessage(const QString& sender, const QString& message);
+    void setWindowTitleByUsername(const QString& username);
+    void updateOnlineUsers(const QStringList& users, const QString& currentUsername);
 
 signals:
     // the gui does NOT process the login or send the message itself.
     void loginRequested(const QString& username);
-    void sendMessageRequested(const QString& message);
+void sendMessageRequested(const QString& message, const QString& recipient);
 
 private:
+
+    QListWidget* onlineUsersList;
+
     // the container that holds the different screens
     QStackedWidget* stackedWidget;
 

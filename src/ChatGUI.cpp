@@ -24,28 +24,44 @@ void ChatGUI::setupUI() {
         emit loginRequested(usernameInput->text());
     });
 
-    // --- build screen 2: chat ---
+// --- build screen 2: chat ---
     chatWidget = new QWidget();
     QVBoxLayout* chatLayout = new QVBoxLayout(chatWidget);
     chatHistory = new QTextEdit();
     chatHistory->setReadOnly(true); 
     
     QHBoxLayout* inputLayout = new QHBoxLayout();
+    
+// --- NEW MULTI-SELECT ONLINE USERS LIST ---
+    onlineUsersList = new QListWidget();
+    onlineUsersList->setSelectionMode(QAbstractItemView::MultiSelection);
+    onlineUsersList->setMaximumHeight(60); // Keeps it compact like a thick dropdown
+    onlineUsersList->setMaximumWidth(150);
+    onlineUsersList->setToolTip("Click multiple names for a group chat. Deselect all to broadcast.");
+    
     messageInput = new QLineEdit();
     messageInput->setPlaceholderText("type a message...");
     sendButton = new QPushButton("Send");
+    
+    inputLayout->addWidget(onlineUsersList);
     inputLayout->addWidget(messageInput);
     inputLayout->addWidget(sendButton);
 
     settingsButton = new QPushButton("Settings"); 
-
     chatLayout->addWidget(settingsButton); 
     chatLayout->addWidget(chatHistory);
     chatLayout->addLayout(inputLayout);
 
+    // Update the button click to grab all selected names
     connect(sendButton, &QPushButton::clicked, this, [this]() {
-        emit sendMessageRequested(messageInput->text());
-        messageInput->clear();
+        QStringList selectedUsers;
+        for (QListWidgetItem* item : onlineUsersList->selectedItems()) {
+            selectedUsers << item->text();
+        }
+        
+        // We join the selected names with commas to reuse our group chat logic!
+        emit sendMessageRequested(messageInput->text(), selectedUsers.join(","));
+        messageInput->clear(); 
     });
 
     // --- build screen 3: settings ---
@@ -95,4 +111,18 @@ void ChatGUI::showErrorPopup(const QString& errorMessage) {
 
 void ChatGUI::appendChatMessage(const QString& sender, const QString& message) {
     chatHistory->append("<b>" + sender + ":</b> " + message);
+}
+
+void ChatGUI::setWindowTitleByUsername(const QString& username) {
+    this->setWindowTitle("Chat App - " + username);
+}
+
+void ChatGUI::updateOnlineUsers(const QStringList& users, const QString& currentUsername) {
+    onlineUsersList->clear();
+    for (const QString& user : users) {
+        // Only add the user to the list if it's not us! 
+        if (user != currentUsername && user != "Unknown") {
+            onlineUsersList->addItem(user);
+        }
+    }
 }

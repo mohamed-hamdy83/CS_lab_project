@@ -17,10 +17,11 @@ public:
     void disconnect() override;
     void sendJsonMessage(const std::string& jsonPayload) override;
 
+signals:
+    void jsonMessageReceived(const std::string& jsonPayload);
+
 private:
     QTcpSocket* socket;
-    
-    // qcoro coroutine to listen for messages asynchronously
     QCoro::Task<void> receiveMessages(); 
 };
 

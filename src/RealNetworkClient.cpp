@@ -43,16 +43,15 @@ void RealNetworkClient::sendJsonMessage(const std::string& jsonPayload) {
 }
 
 QCoro::Task<void> RealNetworkClient::receiveMessages() {
-    // this loops continuously without freezing the gui
     while (socket->isOpen() && socket->state() == QAbstractSocket::ConnectedState) {
-        
-        // co_await yields control back to the app until data arrives
+        // Wait for a full line (ending in \n)
         QByteArray data = co_await qCoro(socket).readLine();
         
-        if (data.isEmpty()) {
-            break; 
-        }
-        
-        std::cout << "[Client Received] " << data.toStdString() << "\n";
+        if (data.isEmpty()) continue;
+
+        std::string jsonStr = data.trimmed().toStdString();
+        std::cout << "network: received data from server: " << jsonStr << "\n";
+
+        emit jsonMessageReceived(jsonStr);
     }
 }
