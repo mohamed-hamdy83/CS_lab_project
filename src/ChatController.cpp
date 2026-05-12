@@ -104,43 +104,61 @@ void ChatController::handleSendMessage(const QString &msgText, const QString &re
     network->sendJsonMessage(doc.toJson(QJsonDocument::Compact).toStdString());
 }
 
-void ChatController::handleIncomingMessage(const std::string &jsonPayload)
-{
+void ChatController::handleIncomingMessage(const std::string& jsonPayload) {
     QJsonDocument doc = QJsonDocument::fromJson(QString::fromStdString(jsonPayload).toUtf8());
 
-    if (doc.isNull())
-        return;
+    if (doc.isNull()) return;
 
     QJsonObject obj = doc.object();
     QString type = obj["type"].toString();
     QJsonObject payload = obj["payload"].toObject();
-    if (type == "user_list")
-    {
+    
+    if (type == "user_list") {
         QJsonArray usersArray = payload["users"].toArray();
         QStringList activeUsers;
-        for (const QJsonValue &val : usersArray)
-        {
+        for (const QJsonValue& val : usersArray) {
             activeUsers << val.toString();
         }
         view->updateOnlineUsers(activeUsers, currentUsername);
-    }
-
+    } 
     // Accept all three types of messages
-    if (type == "broadcast" || type == "private_chat" || type == "group_chat")
-    {
-        QString sender = payload["sender"].toString();
+    else if (type == "broadcast" || type == "private_chat" || type == "group_chat") {
+        QString originalSender = payload["sender"].toString();
         QString content = payload["content"].toString();
-
+        
+        // We use a new variable for the display name so we don't overwrite the original
+        QString displaySender = originalSender;
+        
         // Add visual tags to the GUI so the user knows the privacy level
-        if (type == "private_chat")
-        {
-            sender = "[Private] " + sender;
+        if (type == "private_chat") {
+            displaySender = "[Private] " + originalSender;
+        } 
+        else if (type == "group_chat") {
+            QJsonArray recipientsArray = payload["recipients"].toArray();
+            QStringList otherMembers;
+            
+            // 1. Add the sender to the group list (if the viewer isn't the sender)
+            if (originalSender != currentUsername) {
+                otherMembers << originalSender;
+            }
+            
+            // 2. Loop through the recipients, SKIP the viewer AND prevent duplicates
+            for (const QJsonValue& val : recipientsArray) {
+                QString memberName = val.toString();
+                if (memberName != currentUsername && memberName != originalSender) {
+                    otherMembers << memberName;
+                }
+            }
+            
+            // 3. Format it nicely
+            if (otherMembers.isEmpty()) {
+                displaySender = "[Group] " + originalSender;
+            } else {
+                displaySender = "[Group with " + otherMembers.join(", ") + "] " + originalSender;
+            }
         }
-        else if (type == "group_chat")
-        {
-            sender = "[Group] " + sender;
-        }
-
-        view->appendChatMessage(sender, content);
+        
+        // Send the formatted string to the GUI
+        view->appendChatMessage(displaySender, content);
     }
 }
